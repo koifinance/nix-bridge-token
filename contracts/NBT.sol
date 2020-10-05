@@ -248,7 +248,7 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
         _balances[taxReceiveAddress] = _balances[taxReceiveAddress].add(feeAmount);
 
         emit Transfer(sender, recipient, newAmount);
-        emit Transfer(sender, address(this), feeAmount);
+        emit Transfer(sender, taxReceiveAddress, feeAmount);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
