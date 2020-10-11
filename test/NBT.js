@@ -123,6 +123,17 @@ describe('NBT:Create', function () {
       expect(await this.token.balanceOf(taxAddress))
         .to.be.bignumber.equal(expectedTaxValue);
     });
+
+    it('does not allow transfer when isPaused', async function () {
+      await this.token.setIsPaused(true, {from: owner});
+      await this.token.transfer(user1, this.value, { from: owner });
+
+      expect(await this.token.balanceOf(user1))
+        .to.be.bignumber.equal(this.value);
+
+      await expectRevert(this.token.transfer(user2, this.value, { from: user1 }), 'ERC20: transfer is paused',);
+
+    });
   });
 
   describe('NBT:setIsTaxEnabled', function () {
@@ -197,6 +208,24 @@ describe('NBT:Create', function () {
       // Event assertions can verify that the arguments are the expected ones
       expectEvent(receipt, 'LogChangeTaxFraction', {
         _tax_fraction: new BN(50),
+      });
+    });
+  });
+
+  describe('NBT:setIsPaused', function () {
+    it('reverts when not called by owner', async function () {
+      // Conditions that trigger a require statement can be precisely tested
+      await expectRevert(
+        this.token.setIsPaused(true, { from: user1 }),
+        'Ownable: caller is not the owner -- Reason given: Ownable: caller is not the owner.',
+      );
+    });
+
+    it('emits LogSetIsPaused event on successful call', async function () {
+      const receipt = await this.token.setIsPaused(true, { from: owner });
+      // Event assertions can verify that the arguments are the expected ones
+      expectEvent(receipt, 'LogSetIsPaused', {
+        _isPaused: true,
       });
     });
   });
