@@ -1,7 +1,7 @@
 # NIX-Bridge-Token on Ethereum
 
 The official mainnet address is:
-- ERC-20 Token: [0x](https://etherscan.io/token/0x)
+- ERC-20 Token: [0xF287DE2ae9c655ab9C10dDDc8eED4e61969D4a5B](https://etherscan.io/token/0xF287DE2ae9c655ab9C10dDDc8eED4e61969D4a5B)
 
 ## Table of Contents
 
