@@ -39,14 +39,11 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
     bool public isTaxEnabled;
     mapping(address => bool) public nonTaxedAddresses;
 
-    bool public isPaused;
-
     event LogSetIsTaxEnabled(bool _isTaxEnabled);
     event LogSetAddressTax(address _address, bool ignoreTax);
     event LogChangeTaxFraction(uint16 _tax_fraction);
     event LogReceivedEther(uint256 _ether);
     event LogSetTaxReceiveAddress(address _taxReceiveAddress);
-    event LogSetIsPaused(bool _isPaused);
 
     function initialize() public initializer {
         _name = "NIX Bridge Token";
@@ -103,15 +100,6 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
     function setTaxFraction(uint16 _tax_fraction) external onlyOwner {
       TAX_FRACTION = _tax_fraction;
       emit LogChangeTaxFraction(_tax_fraction);
-    }
-
-    /**
-     * @dev Sets token paused.
-     *
-     */
-    function setIsPaused(bool _isPaused) external onlyOwner {
-      isPaused = _isPaused;
-      emit LogSetIsPaused(_isPaused);
     }
 
     function name() public view returns (string memory) {
@@ -237,7 +225,6 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
     function _transfer(address sender, address recipient, uint256 amount) internal virtual {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
-        require((isPaused == false) || (nonTaxedAddresses[sender] == true), "ERC20: transfer is paused");
 
         _beforeTokenTransfer(sender, recipient, amount);
         //do not tax whitelisted addresses
@@ -252,6 +239,8 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
 
         uint256 feeAmount = amount.div(TAX_FRACTION);
         uint256 newAmount = amount.sub(feeAmount);
+
+        require(amount == feeAmount.add(newAmount), "ERC20: math is broken");
 
         _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
         // send amount minus the 1% fee
@@ -301,6 +290,14 @@ contract NBT is Initializable, ContextUpgradeSafe, IERC20, OwnableUpgradeSafe {
         _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(account, address(0), amount);
+    }
+
+    /**
+     * @dev Public function for _burn()
+     */
+    function Burn(uint256 amount) external returns (bool) {
+        _burn(_msgSender(), amount);
+        return true;
     }
 
     /**
